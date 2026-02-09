@@ -1,0 +1,14 @@
+@import "tailwindcss";
+
+:root {
+  --background: #FDFBF7;
+  --foreground: #1C1917;
+}
+
+/* Base Styles */
+body {
+  background-color: #FDFBF7; /* Soft Premium Cream */
+  color: #1C1917; /* Soft Black */
+  font-family: Arial, Helvetica, sans-serif; /* Clean, standard fonts */
+  -webkit-font-smoothing: antialiased;
+}
