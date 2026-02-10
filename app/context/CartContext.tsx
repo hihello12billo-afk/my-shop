@@ -1,41 +1,57 @@
 'use client';
 
-import { createContext, useContext, useState, ReactNode } from 'react';
+import { createContext, useContext, useState, useEffect } from 'react';
 
-type CartItem = {
+// Define the shape of a Product
+interface Product {
   id: number;
   title: string;
   price: number;
   image: string;
-};
+  category: string;
+}
 
-type CartContextType = {
-  items: CartItem[];
-  addToCart: (product: CartItem) => void;
+// Define the shape of the Context
+interface CartContextType {
+  items: Product[];
+  addToCart: (product: Product) => void;
   removeFromCart: (id: number) => void;
-  isCartOpen: boolean;
-  toggleCart: () => void;
-};
+  clearCart: () => void; // <--- WE ADDED THIS
+}
 
 const CartContext = createContext<CartContextType | undefined>(undefined);
 
-export function CartProvider({ children }: { children: ReactNode }) {
-  const [items, setItems] = useState<CartItem[]>([]);
-  const [isCartOpen, setIsCartOpen] = useState(false);
+export function CartProvider({ children }: { children: React.ReactNode }) {
+  const [items, setItems] = useState<Product[]>([]);
 
-  const addToCart = (product: CartItem) => {
-    setItems([...items, product]);
-    setIsCartOpen(true); // Open cart automatically when adding
+  // Load cart from LocalStorage on start
+  useEffect(() => {
+    const savedCart = localStorage.getItem('cart');
+    if (savedCart) {
+      setItems(JSON.parse(savedCart));
+    }
+  }, []);
+
+  // Save cart to LocalStorage whenever it changes
+  useEffect(() => {
+    localStorage.setItem('cart', JSON.stringify(items));
+  }, [items]);
+
+  const addToCart = (product: Product) => {
+    setItems((prev) => [...prev, product]);
   };
 
   const removeFromCart = (id: number) => {
-    setItems(items.filter((item) => item.id !== id));
+    setItems((prev) => prev.filter((item) => item.id !== id));
   };
 
-  const toggleCart = () => setIsCartOpen(!isCartOpen);
+  // The new function to empty the cart
+  const clearCart = () => {
+    setItems([]);
+  };
 
   return (
-    <CartContext.Provider value={{ items, addToCart, removeFromCart, isCartOpen, toggleCart }}>
+    <CartContext.Provider value={{ items, addToCart, removeFromCart, clearCart }}>
       {children}
     </CartContext.Provider>
   );
@@ -43,6 +59,8 @@ export function CartProvider({ children }: { children: ReactNode }) {
 
 export function useCart() {
   const context = useContext(CartContext);
-  if (!context) throw new Error('useCart must be used within a CartProvider');
+  if (context === undefined) {
+    throw new Error('useCart must be used within a CartProvider');
+  }
   return context;
 }

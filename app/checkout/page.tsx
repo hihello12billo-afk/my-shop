@@ -1,176 +1,138 @@
 'use client';
 
-import Navbar from '../components/Navbar'; // <--- FIXED: Only 2 dots
-import { useCart } from '../context/CartContext'; // <--- FIXED: Only 1 dot to get to app/context
-import { useState } from 'react';
+// FIXED IMPORT: Only 2 dots to go up to 'app'
+import Navbar from '../components/Navbar'; 
+import { useCart } from '../context/CartContext';
 import Image from 'next/image';
-import { CreditCard, Truck, ShieldCheck, Lock } from 'lucide-react';
+import { useState } from 'react';
+import { ShieldCheck, Lock } from 'lucide-react';
+import Link from 'next/link';
 
 export default function CheckoutPage() {
-  const { items } = useCart();
-  const total = items.reduce((sum, item) => sum + item.price, 0);
+  const { items, clearCart } = useCart();
   const [isProcessing, setIsProcessing] = useState(false);
+  const [isSuccess, setIsSuccess] = useState(false);
+
+  // Calculate Total
+  const total = items.reduce((sum, item) => sum + item.price, 0);
 
   const handlePayment = (e: React.FormEvent) => {
     e.preventDefault();
     setIsProcessing(true);
-    // Simulate Payment Processing
+
+    // Simulate Payment Delay (2 seconds)
     setTimeout(() => {
-        setIsProcessing(false);
-        alert("Payment Successful! Your order has been placed.");
-        window.location.href = "/";
+      setIsProcessing(false);
+      setIsSuccess(true);
+      clearCart(); // Empty the cart after purchase
     }, 2000);
   };
 
+  if (isSuccess) {
+    return (
+      <main className="min-h-screen bg-[#FDFBF7] flex items-center justify-center p-6">
+        <div className="bg-white p-12 rounded-2xl shadow-xl max-w-lg w-full text-center border border-stone-100">
+          <div className="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-6">
+            <ShieldCheck size={40} className="text-green-600" />
+          </div>
+          <h1 className="text-3xl font-serif font-bold text-stone-900 mb-4">Order Confirmed!</h1>
+          <p className="text-stone-500 mb-8">Thank you for your purchase. We have sent a confirmation email to your inbox.</p>
+          <Link href="/new-arrivals">
+            <button className="w-full bg-black text-white py-4 rounded-xl font-bold uppercase tracking-widest hover:bg-stone-800 transition">
+              Continue Shopping
+            </button>
+          </Link>
+        </div>
+      </main>
+    );
+  }
+
   return (
-    <main className="min-h-screen bg-gray-100 text-black">
+    <main className="min-h-screen bg-[#FDFBF7]">
       <Navbar />
       
-      <div className="pt-32 pb-20 px-4 md:px-8 max-w-7xl mx-auto">
-        <h1 className="text-4xl font-extrabold mb-10 tracking-tight text-black">CHECKOUT</h1>
+      <div className="pt-32 pb-20 px-6 max-w-7xl mx-auto">
+        <h1 className="text-4xl font-serif font-bold mb-10 text-center md:text-left">Checkout</h1>
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-12">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-24">
           
-          {/* LEFT COLUMN: FORMS */}
-          <div className="lg:col-span-2 space-y-8">
-            
-            {/* 1. Contact Info Section */}
-            <div className="bg-white p-8 rounded-2xl shadow-lg border border-gray-200">
-              <h2 className="text-2xl font-bold mb-6 flex items-center gap-3">
-                <span className="bg-black text-white w-8 h-8 flex items-center justify-center rounded-full text-sm font-bold">1</span>
-                Shipping Details
-              </h2>
+          {/* LEFT: Shipping Form */}
+          <div>
+            <form onSubmit={handlePayment} className="space-y-8">
               
-              <div className="space-y-5">
-                <div>
-                  <label className="block text-sm font-bold text-gray-700 mb-1">Email Address</label>
-                  <input type="email" placeholder="you@example.com" className="w-full p-4 bg-gray-50 border border-gray-300 rounded-lg focus:ring-2 focus:ring-black outline-none font-medium" />
-                </div>
-                
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-                    <div>
-                      <label className="block text-sm font-bold text-gray-700 mb-1">First Name</label>
-                      <input type="text" placeholder="John" className="w-full p-4 bg-gray-50 border border-gray-300 rounded-lg focus:ring-2 focus:ring-black outline-none font-medium" />
-                    </div>
-                    <div>
-                      <label className="block text-sm font-bold text-gray-700 mb-1">Last Name</label>
-                      <input type="text" placeholder="Doe" className="w-full p-4 bg-gray-50 border border-gray-300 rounded-lg focus:ring-2 focus:ring-black outline-none font-medium" />
-                    </div>
-                </div>
-                
-                <div>
-                  <label className="block text-sm font-bold text-gray-700 mb-1">Address</label>
-                  <input type="text" placeholder="123 Luxury Lane" className="w-full p-4 bg-gray-50 border border-gray-300 rounded-lg focus:ring-2 focus:ring-black outline-none font-medium" />
-                </div>
-
-                <div className="grid grid-cols-2 gap-5">
-                    <div>
-                      <label className="block text-sm font-bold text-gray-700 mb-1">City</label>
-                      <input type="text" placeholder="New York" className="w-full p-4 bg-gray-50 border border-gray-300 rounded-lg focus:ring-2 focus:ring-black outline-none font-medium" />
-                    </div>
-                    <div>
-                      <label className="block text-sm font-bold text-gray-700 mb-1">ZIP / Postal</label>
-                      <input type="text" placeholder="10001" className="w-full p-4 bg-gray-50 border border-gray-300 rounded-lg focus:ring-2 focus:ring-black outline-none font-medium" />
-                    </div>
-                </div>
-              </div>
-            </div>
-
-            {/* 2. Payment Section */}
-            <div className="bg-white p-8 rounded-2xl shadow-lg border border-gray-200">
-              <h2 className="text-2xl font-bold mb-6 flex items-center gap-3">
-                <span className="bg-black text-white w-8 h-8 flex items-center justify-center rounded-full text-sm font-bold">2</span>
-                Payment Method
-              </h2>
-              
-              {/* Payment Tabs */}
-              <div className="flex gap-4 mb-8">
-                <button className="flex-1 py-4 border-2 border-black bg-black text-white font-bold rounded-xl flex items-center justify-center gap-2 shadow-md">
-                    <CreditCard size={20} /> Credit Card
-                </button>
-                <button className="flex-1 py-4 border-2 border-gray-200 bg-white text-gray-500 font-bold rounded-xl hover:bg-gray-50 transition">
-                    PayPal
-                </button>
+              {/* Section 1: Email */}
+              <div className="bg-white p-6 rounded-xl border border-stone-100 shadow-sm">
+                <h2 className="text-lg font-bold mb-4">Contact Information</h2>
+                <input required type="email" placeholder="Email Address" className="w-full p-4 bg-stone-50 rounded-lg outline-none border border-transparent focus:border-stone-900 transition" />
               </div>
 
-              <form onSubmit={handlePayment} className="space-y-5">
-                <div>
-                   <label className="block text-sm font-bold text-gray-700 mb-1">Card Number</label>
-                   <div className="relative">
-                     <Lock className="absolute left-4 top-4 text-gray-400" size={18} />
-                     <input type="text" placeholder="0000 0000 0000 0000" className="w-full pl-12 p-4 bg-gray-50 border border-gray-300 rounded-lg font-mono focus:ring-2 focus:ring-black outline-none" />
-                   </div>
+              {/* Section 2: Shipping */}
+              <div className="bg-white p-6 rounded-xl border border-stone-100 shadow-sm space-y-4">
+                <h2 className="text-lg font-bold mb-4">Shipping Address</h2>
+                <div className="grid grid-cols-2 gap-4">
+                  <input required type="text" placeholder="First Name" className="w-full p-4 bg-stone-50 rounded-lg outline-none border border-transparent focus:border-stone-900 transition" />
+                  <input required type="text" placeholder="Last Name" className="w-full p-4 bg-stone-50 rounded-lg outline-none border border-transparent focus:border-stone-900 transition" />
                 </div>
-
-                <div className="grid grid-cols-2 gap-5">
-                    <div>
-                      <label className="block text-sm font-bold text-gray-700 mb-1">Expiry Date</label>
-                      <input type="text" placeholder="MM / YY" className="w-full p-4 bg-gray-50 border border-gray-300 rounded-lg text-center font-medium focus:ring-2 focus:ring-black outline-none" />
-                    </div>
-                    <div>
-                      <label className="block text-sm font-bold text-gray-700 mb-1">CVC</label>
-                      <input type="text" placeholder="123" className="w-full p-4 bg-gray-50 border border-gray-300 rounded-lg text-center font-medium focus:ring-2 focus:ring-black outline-none" />
-                    </div>
+                <input required type="text" placeholder="Address" className="w-full p-4 bg-stone-50 rounded-lg outline-none border border-transparent focus:border-stone-900 transition" />
+                <div className="grid grid-cols-2 gap-4">
+                  <input required type="text" placeholder="City" className="w-full p-4 bg-stone-50 rounded-lg outline-none border border-transparent focus:border-stone-900 transition" />
+                  <input required type="text" placeholder="Postal Code" className="w-full p-4 bg-stone-50 rounded-lg outline-none border border-transparent focus:border-stone-900 transition" />
                 </div>
-                
-                <button 
-                  disabled={isProcessing}
-                  className="w-full bg-black text-white py-5 text-lg font-bold rounded-xl hover:bg-gray-800 transition mt-6 flex items-center justify-center gap-3 shadow-xl transform active:scale-95 duration-200"
-                >
-                  {isProcessing ? "Processing..." : `PAY $${total.toFixed(2)}`}
-                </button>
-                
-                <p className="text-xs text-center text-gray-400 mt-4 flex items-center justify-center gap-1">
-                   <ShieldCheck size={14} /> 256-bit SSL Secure Payment
-                </p>
-              </form>
-            </div>
+              </div>
 
+              {/* Section 3: Payment */}
+              <div className="bg-white p-6 rounded-xl border border-stone-100 shadow-sm space-y-4">
+                <h2 className="text-lg font-bold mb-4 flex items-center gap-2">
+                  <Lock size={16} className="text-stone-400" /> Payment
+                </h2>
+                <input required type="text" placeholder="Card Number" className="w-full p-4 bg-stone-50 rounded-lg outline-none border border-transparent focus:border-stone-900 transition" />
+                <div className="grid grid-cols-2 gap-4">
+                  <input required type="text" placeholder="MM / YY" className="w-full p-4 bg-stone-50 rounded-lg outline-none border border-transparent focus:border-stone-900 transition" />
+                  <input required type="text" placeholder="CVC" className="w-full p-4 bg-stone-50 rounded-lg outline-none border border-transparent focus:border-stone-900 transition" />
+                </div>
+              </div>
+
+              <button disabled={isProcessing} className="w-full bg-black text-white py-5 rounded-xl font-bold uppercase tracking-widest text-lg hover:bg-stone-800 transition shadow-lg flex items-center justify-center gap-3">
+                {isProcessing ? "Processing..." : `Pay $${total.toFixed(2)}`}
+              </button>
+            </form>
           </div>
 
-          {/* RIGHT COLUMN: ORDER SUMMARY */}
-          <div className="lg:col-span-1">
-            <div className="bg-white p-8 rounded-2xl shadow-xl border border-gray-200 sticky top-28">
-              <h2 className="text-xl font-bold mb-6 border-b pb-4 text-black">Order Summary</h2>
-              
-              <div className="space-y-6 mb-8 max-h-[400px] overflow-y-auto custom-scrollbar">
-                {items.map((item, i) => (
-                  <div key={i} className="flex gap-4 items-center">
-                    <div className="relative w-20 h-20 bg-gray-100 rounded-lg overflow-hidden border border-gray-200 flex-shrink-0">
-                      <Image src={item.image} alt={item.title} fill className="object-cover" />
+          {/* RIGHT: Order Summary */}
+          <div className="hidden lg:block">
+            <div className="sticky top-32">
+              <h2 className="text-xl font-bold mb-6">Order Summary</h2>
+              <div className="bg-white p-8 rounded-xl border border-stone-100 shadow-sm space-y-6">
+                
+                {items.length === 0 ? (
+                  <p className="text-stone-400">Your cart is empty.</p>
+                ) : (
+                  items.map((item, i) => (
+                    <div key={i} className="flex gap-4">
+                      <div className="relative w-16 h-20 bg-stone-100 rounded-md overflow-hidden shrink-0">
+                         <Image src={item.image} alt={item.title} fill className="object-cover" />
+                      </div>
+                      <div>
+                        <p className="font-bold text-sm">{item.title}</p>
+                        <p className="text-stone-500 text-sm">${item.price}</p>
+                      </div>
                     </div>
-                    <div>
-                      <p className="font-bold text-sm text-gray-900 line-clamp-2">{item.title}</p>
-                      <p className="text-gray-500 text-sm font-medium mt-1">${item.price.toFixed(2)}</p>
-                    </div>
-                  </div>
-                ))}
-              </div>
+                  ))
+                )}
 
-              <div className="space-y-3 text-sm pt-4 border-t border-gray-100">
-                <div className="flex justify-between text-gray-600">
-                  <span>Subtotal</span>
-                  <span className="font-medium">${total.toFixed(2)}</span>
+                <div className="h-px bg-stone-100 my-4"></div>
+                
+                <div className="flex justify-between font-bold text-xl">
+                   <span>Total</span>
+                   <span>${total.toFixed(2)}</span>
                 </div>
-                <div className="flex justify-between text-gray-600">
-                  <span>Shipping</span>
-                  <span className="text-green-600 font-bold uppercase text-xs bg-green-100 px-2 py-1 rounded">Free</span>
+                
+                <div className="bg-stone-50 p-4 rounded-lg flex gap-3 text-xs text-stone-500">
+                   <ShieldCheck size={32} />
+                   <p>Your payment information is encrypted and secure. We do not store your credit card details.</p>
                 </div>
-              </div>
-              
-              <div className="flex justify-between text-2xl font-extrabold border-t border-gray-200 mt-6 pt-6 text-black">
-                <span>Total</span>
-                <span>${total.toFixed(2)}</span>
-              </div>
 
-              <div className="mt-8 bg-gray-50 p-4 rounded-xl flex items-start gap-3 text-xs text-gray-600 border border-gray-200">
-                <Truck className="shrink-0 text-black" size={18} />
-                <p className="leading-relaxed">
-                  <strong>Free Express Shipping.</strong><br/>
-                  All orders are processed in USD. Returns accepted within 30 days.
-                </p>
               </div>
-
             </div>
           </div>
 
