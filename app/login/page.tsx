@@ -1,30 +1,34 @@
 'use client';
 
+import React, { useState } from 'react';
 import Link from 'next/link';
+import { signIn } from 'next-auth/react';
 import Navbar from '../components/Navbar';
-import { useState } from 'react';
-import { Chrome } from 'lucide-react'; // Simulating Google Icon
-
 export default function LoginPage() {
   const [isLoading, setIsLoading] = useState(false);
 
-  const handleLogin = (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleGoogleLogin = () => {
     setIsLoading(true);
-    setTimeout(() => {
-        setIsLoading(false);
-        window.location.href = "/";
-    }, 1500);
+    signIn("google", { callbackUrl: "/" });
   };
 
-  const handleGoogleLogin = () => {
-    // This simulates the Google Login for now
-    alert("In a real app, this would open the Google Popup!");
-    window.location.href = "/";
+  const handleEmailLogin = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsLoading(true);
+    
+    const target = e.target as any;
+    const email = target.email.value;
+    const password = target.password.value;
+
+    await signIn("credentials", { 
+      email, 
+      password, 
+      callbackUrl: "/" 
+    });
   };
 
   return (
-    <main className="min-h-screen bg-[#FDFBF7]"> {/* Premium Cream Background */}
+    <main className="min-h-screen bg-[#FDFBF7]">
       <Navbar />
       
       <div className="flex items-center justify-center min-h-screen px-4 pt-20">
@@ -35,13 +39,12 @@ export default function LoginPage() {
             <p className="text-stone-500">Sign in to access your exclusive benefits.</p>
           </div>
 
-          {/* Google Button */}
           <button 
             onClick={handleGoogleLogin}
             className="w-full flex items-center justify-center gap-3 bg-white border border-stone-200 text-stone-700 py-4 rounded-xl font-bold hover:bg-stone-50 transition mb-6 shadow-sm group"
           >
+            {/* Google Icon */}
             <div className="w-5 h-5 relative">
-               {/* Simple colored Google G visual */}
                <svg viewBox="0 0 24 24" className="w-5 h-5">
                  <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
                  <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
@@ -58,46 +61,21 @@ export default function LoginPage() {
             <div className="flex-grow border-t border-stone-200"></div>
           </div>
 
-          <form onSubmit={handleLogin} className="space-y-5">
+          <form onSubmit={handleEmailLogin} className="space-y-5">
             <div>
-              <input 
-                type="email" 
-                required 
-                className="w-full px-4 py-4 rounded-xl bg-stone-50 border-2 border-transparent focus:border-stone-900 focus:bg-white outline-none transition font-medium"
-                placeholder="Email Address"
-              />
+              <input name="email" type="email" required className="w-full px-4 py-4 rounded-xl bg-stone-50 border-2 border-transparent focus:border-stone-900 focus:bg-white outline-none transition font-medium" placeholder="Email Address" />
             </div>
-
             <div>
-              <input 
-                type="password" 
-                required 
-                className="w-full px-4 py-4 rounded-xl bg-stone-50 border-2 border-transparent focus:border-stone-900 focus:bg-white outline-none transition font-medium"
-                placeholder="Password"
-              />
+              <input name="password" type="password" required className="w-full px-4 py-4 rounded-xl bg-stone-50 border-2 border-transparent focus:border-stone-900 focus:bg-white outline-none transition font-medium" placeholder="Password" />
             </div>
 
-            <div className="flex items-center justify-between text-sm">
-              <label className="flex items-center gap-2 cursor-pointer select-none">
-                <input type="checkbox" className="rounded border-stone-300 text-black focus:ring-black accent-black" />
-                <span className="text-stone-600">Remember me</span>
-              </label>
-              <a href="#" className="font-bold text-stone-900 hover:underline">Forgot password?</a>
-            </div>
-
-            <button 
-              disabled={isLoading}
-              className="w-full bg-stone-900 text-white py-4 rounded-xl font-bold text-lg hover:bg-black hover:scale-[1.02] active:scale-[0.98] transition shadow-lg"
-            >
+            <button disabled={isLoading} className="w-full bg-stone-900 text-white py-4 rounded-xl font-bold text-lg hover:bg-black hover:scale-[1.02] active:scale-[0.98] transition shadow-lg">
               {isLoading ? "Signing In..." : "SIGN IN"}
             </button>
           </form>
 
           <div className="mt-8 text-center text-sm text-stone-500">
-            Don't have an account? {' '}
-            <Link href="/register" className="font-bold text-stone-900 hover:underline">
-              Create Account
-            </Link>
+            Don't have an account? <Link href="/register" className="font-bold text-stone-900 hover:underline">Create Account</Link>
           </div>
 
         </div>

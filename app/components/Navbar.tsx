@@ -1,5 +1,5 @@
 'use client';
-
+import { useSession } from 'next-auth/react';
 import Link from 'next/link';
 import { ShoppingBag, Search, User } from 'lucide-react';
 import { useCart } from '../context/CartContext'; // <--- FIXED THIS LINE (Removed "app/")
