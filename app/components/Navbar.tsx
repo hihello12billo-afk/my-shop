@@ -1,68 +1,77 @@
 'use client';
-import { useSession } from 'next-auth/react';
+
 import Link from 'next/link';
-import { ShoppingBag, Search, User } from 'lucide-react';
-import { useCart } from '../context/CartContext'; // <--- FIXED THIS LINE (Removed "app/")
-import CartDrawer from './CartDrawer';
+import { ShoppingBag, Search, Menu, X, User } from 'lucide-react';
+import { useCart } from '../context/CartContext';
+import { useSession } from 'next-auth/react'; // Import Session Hook
+import { useState } from 'react';
 
 export default function Navbar() {
-  const { toggleCart, items } = useCart();
+  const { items } = useCart();
+  const { data: session } = useSession(); // Check if user is logged in
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
 
   return (
-    <>
-      <nav className="fixed top-0 w-full z-50 bg-white/90 backdrop-blur-md border-b border-gray-100">
-        <div className="max-w-7xl mx-auto px-6">
-          <div className="flex justify-between items-center h-20">
-            
-            {/* Logo */}
-            <Link href="/" className="text-2xl font-bold tracking-tighter text-black uppercase">
-              LUXE.<span className="text-gray-400">STORE</span>
-            </Link>
+    <nav className="fixed w-full bg-white/80 backdrop-blur-md z-50 border-b border-stone-100 transition-all duration-300">
+      <div className="max-w-7xl mx-auto px-6 h-20 flex items-center justify-between">
+        
+        {/* Mobile Menu Button */}
+        <button className="md:hidden" onClick={() => setIsMenuOpen(!isMenuOpen)}>
+          {isMenuOpen ? <X size={24} /> : <Menu size={24} />}
+        </button>
 
-            {/* Desktop Links */}
-            <div className="hidden md:flex space-x-8">
-              <Link href="/new-arrivals" className="text-sm font-medium text-gray-900 hover:text-gray-500 transition-colors">
-                New Arrivals
-              </Link>
-              <Link href="/brands" className="text-sm font-medium text-gray-900 hover:text-gray-500 transition-colors">
-                Brands
-              </Link>
-              <Link href="/accessories" className="text-sm font-medium text-gray-900 hover:text-gray-500 transition-colors">
-                Accessories
-              </Link>
-            </div>
+        {/* Logo */}
+        <Link href="/" className="text-2xl font-serif font-bold tracking-tighter hover:opacity-70 transition">
+          LUXE.
+        </Link>
 
-            {/* Icons */}
-            <div className="flex items-center space-x-6">
-              
-              {/* User / Login Icon */}
-              <Link href="/login">
-                <User className="w-5 h-5 cursor-pointer hover:text-gray-500 transition" />
-              </Link>
-
-              <Search className="w-5 h-5 cursor-pointer hover:text-gray-500 transition" />
-              
-              {/* Shopping Bag */}
-              {/* ... keep your existing shopping bag code here ... */}
-              
-              {/* Shopping Bag - Click to Open Cart */}
-              <button 
-                onClick={toggleCart} 
-                className="relative cursor-pointer hover:opacity-70 transition"
-              >
-                <ShoppingBag className="w-5 h-5" />
-                {items.length > 0 && (
-                  <span className="absolute -top-1 -right-1 bg-black text-white text-[10px] w-4 h-4 flex items-center justify-center rounded-full">
-                    {items.length}
-                  </span>
-                )}
-              </button>
-            </div>
-
-          </div>
+        {/* Desktop Links */}
+        <div className="hidden md:flex gap-8 text-sm font-medium tracking-wide text-stone-600">
+          <Link href="/new-arrivals" className="hover:text-black transition">NEW ARRIVALS</Link>
+          <Link href="#" className="hover:text-black transition">BAGS</Link>
+          <Link href="#" className="hover:text-black transition">ACCESSORIES</Link>
+          <Link href="#" className="hover:text-black transition">EDITORIAL</Link>
         </div>
-      </nav>
-      <CartDrawer />
-    </>
+
+        {/* Icons */}
+        <div className="flex items-center gap-6">
+          <Search size={20} className="text-stone-400 hover:text-black cursor-pointer transition" />
+          
+          {/* DYNAMIC PROFILE ICON */}
+          {session ? (
+            // IF LOGGED IN: Show User Icon -> Goes to Profile
+            <Link href="/profile" className="hover:text-stone-600 transition" title="My Profile">
+              <User size={22} />
+            </Link>
+          ) : (
+            // IF LOGGED OUT: Show Login Text -> Goes to Login
+            <Link href="/login" className="hidden md:block text-xs font-bold uppercase tracking-widest hover:text-stone-600 transition">
+              Login
+            </Link>
+          )}
+
+          {/* Cart Icon */}
+          <Link href="/cart" className="relative">
+            <ShoppingBag size={20} className="hover:text-stone-600 transition" />
+            {items.length > 0 && (
+              <span className="absolute -top-2 -right-2 bg-black text-white text-[10px] w-4 h-4 flex items-center justify-center rounded-full">
+                {items.length}
+              </span>
+            )}
+          </Link>
+        </div>
+      </div>
+
+      {/* Mobile Menu Dropdown */}
+      {isMenuOpen && (
+        <div className="md:hidden absolute top-20 left-0 w-full bg-white border-b border-stone-100 p-6 flex flex-col gap-4 text-sm font-bold animate-in slide-in-from-top-5">
+          <Link href="/new-arrivals" onClick={() => setIsMenuOpen(false)}>NEW ARRIVALS</Link>
+          <Link href="#" onClick={() => setIsMenuOpen(false)}>BAGS</Link>
+          <Link href="#" onClick={() => setIsMenuOpen(false)}>ACCESSORIES</Link>
+          {!session && <Link href="/login" onClick={() => setIsMenuOpen(false)}>LOGIN</Link>}
+          {session && <Link href="/profile" onClick={() => setIsMenuOpen(false)}>MY ACCOUNT</Link>}
+        </div>
+      )}
+    </nav>
   );
 }
