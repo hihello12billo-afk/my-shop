@@ -2,29 +2,32 @@
 
 import { createContext, useContext, useState, useEffect } from 'react';
 
-// Define the shape of a Product
-interface Product {
+// 1. Define what a Cart Item looks like
+type CartItem = {
   id: number;
   title: string;
   price: number;
   image: string;
-  category: string;
-}
+  category?: string;
+};
 
-// Define the shape of the Context
-interface CartContextType {
-  items: Product[];
-  addToCart: (product: Product) => void;
+// 2. Define the "Rules" (Types)
+type CartContextType = {
+  items: CartItem[];
+  addToCart: (item: CartItem) => void;
   removeFromCart: (id: number) => void;
-  clearCart: () => void; // <--- WE ADDED THIS
-}
+  clearCart: () => void;
+  isCartOpen: boolean;      // <--- NEW: Missing piece
+  toggleCart: () => void;   // <--- NEW: Missing piece
+};
 
 const CartContext = createContext<CartContextType | undefined>(undefined);
 
 export function CartProvider({ children }: { children: React.ReactNode }) {
-  const [items, setItems] = useState<Product[]>([]);
+  const [items, setItems] = useState<CartItem[]>([]);
+  const [isCartOpen, setIsCartOpen] = useState(false); // <--- NEW State
 
-  // Load cart from LocalStorage on start
+  // Load from LocalStorage
   useEffect(() => {
     const savedCart = localStorage.getItem('cart');
     if (savedCart) {
@@ -32,26 +35,35 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     }
   }, []);
 
-  // Save cart to LocalStorage whenever it changes
+  // Save to LocalStorage
   useEffect(() => {
     localStorage.setItem('cart', JSON.stringify(items));
   }, [items]);
 
-  const addToCart = (product: Product) => {
-    setItems((prev) => [...prev, product]);
+  const addToCart = (item: CartItem) => {
+    setItems(prev => [...prev, item]);
+    setIsCartOpen(true); // Open drawer automatically when adding
   };
 
   const removeFromCart = (id: number) => {
-    setItems((prev) => prev.filter((item) => item.id !== id));
+    setItems(prev => prev.filter(item => item.id !== id));
   };
 
-  // The new function to empty the cart
   const clearCart = () => {
     setItems([]);
   };
 
+  const toggleCart = () => setIsCartOpen(prev => !prev);
+
   return (
-    <CartContext.Provider value={{ items, addToCart, removeFromCart, clearCart }}>
+    <CartContext.Provider value={{ 
+      items, 
+      addToCart, 
+      removeFromCart, 
+      clearCart,
+      isCartOpen,  // <--- Passing the value
+      toggleCart   // <--- Passing the function
+    }}>
       {children}
     </CartContext.Provider>
   );
